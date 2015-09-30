@@ -1,0 +1,21 @@
+<meta name='viewport' content='width=device-width,initial-scale=1,user-scalable=no'>
+
+<div ng-app="carousel" class="carousel">
+  <div class="carousel-item" ng-repeat="item in [1, 2, 3, 4]">
+    <h1>{{$index}}</h1>
+  </div>
+</div>
+
+<style>
+  h1 {
+    padding: 0;
+    margin: 0;
+    height: 100%;
+    display: -webkit-flex;
+    -webkit-justify-content: center;
+    -webkit-align-items: center;
+    color: white;
+    font-family: sans-serif;
+  }
+</style>
+<script src="bundle.js"></script>
