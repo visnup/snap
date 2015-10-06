@@ -6,24 +6,22 @@ angular
 .module('carousel', [
   require('exports?"duScroll"!angular-scroll')
 ])
-.directive('carousel', function() {
+.directive('carousel', function($timeout) {
   return {
     restrict: 'C',
     controller: class {
       constructor($element) {
         this.$element = $element;
-        this.width = this.$element[0].offsetWidth;
-        this.x0 = this.$element[0].scrollLeft;
-        this.v0 = 0;
-        this.a0 = 0;
+        this.width = this.$element.prop('offsetWidth');
+        this.x0 = this.$element.scrollLeft();
         this.t0 = null;
-        this.xf = null;
+        this.v = 0;
 
         var isScrollSnapSupported = 'scrollSnapType' in document.documentElement.style || 'webkitScrollSnapType' in document.documentElement.style;
         var isTouchSupported = 'ontouchstart' in window;
         
         if (isTouchSupported && !isScrollSnapSupported) {
-          $element
+          this.$element
             .addClass('snap')
             .on('touchstart', this.onTouchStart.bind(this))
             .on('touchend', this.onTouchEnd.bind(this))
@@ -32,41 +30,46 @@ angular
       }
 
       onTouchStart(e) {
-        this.xf = null;
+        this.t0 = Date.now();
       }
 
       onTouchEnd(e) {
-        var x = this.$element.scrollLeft() + this.v0 * 100;
-        this.xf = Math.round(x / this.width) * this.width;
-        var dt = Math.min(Math.abs((this.xf - x) / (this.v0 || 200)), 300);
+        const x = this.$element.scrollLeft(),
+              xf = x + this.v * 100;
+        console.log({ x: x, v: this.v, xf: xf, width: this.width });
+        //this.xf = Math.round(x / this.width) * this.width;
+        //var dt = Math.min(Math.abs((this.xf - x) / (this.v0 || 200)), 300);
 
-        this.$element.css('overflow', 'hidden');
-        setTimeout(() => {
+        this.$element
+          .off('scroll')
+          .css('overflow', 'hidden');
+        $timeout(() => {
           this.$element
             .css('overflow', 'scroll')
-            .scrollLeft(this.xf, dt);
+            .scrollLeft(xf, 100, 'easeOutQuad').finally(() => {
+              this.$element.on('scroll', this.onScroll.bind(this));
+            });
         }, 0);
+
+        // I've decided I know where you're going. Let me help you along.
+        //console.log('xf:', this.xf);
       }
 
       onScroll(e) {
-        var x = this.$element[0].scrollLeft,
-            t = Date.now();
+        const x = this.$element.scrollLeft(),
+              t = Date.now(),
+              dt = t - this.t0;
 
-        if (this.t0) {
-          var v = (x - this.x0) / (t - this.t0),
-              a = v - this.v0;
+        if (dt < 5)
+          return;
 
-          this.v0 = v;
-          this.a0 = a;
-        }
-
-        if (this.xf !== null) {
-          // I've decided I know where you're going. Let me help you along.
-          console.log('xf:', this.xf);
-        }
-
+        this.v = (x - this.x0) / dt;
+        //console.log({ x: x, dt: dt, v: this.v });
         this.x0 = x;
         this.t0 = t;
+      }
+
+      haltUserScrolling(xf) {
       }
     }
   };
