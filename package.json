@@ -5,7 +5,7 @@
   "main": "index.js",
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1",
-    "start": "webpack-dev-server --hot --inline --module-bind 'jsx=babel' index.jsx"
+    "start": "webpack-dev-server --host 0.0.0.0 --hot --inline --module-bind 'jsx=babel' index.jsx"
   },
   "author": "",
   "license": "ISC",
