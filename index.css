@@ -16,6 +16,6 @@
 }
 
 /* hide scrollbars when the directive kicks in */
-.carousel.snap::-webkit-scrollbar {
+.carousel.hide-scrollbar::-webkit-scrollbar {
   display: none;
 }

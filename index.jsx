@@ -9,6 +9,7 @@ angular
 .directive('carousel', function($timeout) {
   return {
     restrict: 'C',
+    controllerAs: 'carousel',
     controller: class {
       constructor($element) {
         this.$element = $element;
@@ -22,7 +23,7 @@ angular
         
         if (isTouchSupported && !isScrollSnapSupported) {
           this.$element
-            .addClass('snap')
+            .addClass('hide-scrollbar')
             .on('touchmove', this.onTouchMove.bind(this))
             .on('touchend', this.onTouchEnd.bind(this));
         }
@@ -43,16 +44,20 @@ angular
 
       onTouchEnd() {
         const x = this.$element.scrollLeft(),
-              xf = Math.round((x + this.v * 100) / this.width) * this.width,
-              dt = Math.max((xf - x) / this.v, 200);
+              xf = Math.round((x + this.v * 200) / this.width) * this.width;
 
+        if (Math.abs(this.v) < 1)
+          this.v = xf > x ? 1 : -1;
+
+        const dt = Math.min((xf - x) / this.v, 500);
+
+        this.dt = dt;
         this.$element
           .css('overflow', 'hidden')
+          .scrollLeft(xf, dt, t => t*(2-t));
         $timeout(() => {
-          this.$element
-            .css('overflow', 'scroll')
-            .scrollLeft(xf, dt, t => t*(2-t));
-        }, 0);
+          this.$element.css('overflow', 'scroll');
+        }, 10);
       }
     }
   };
