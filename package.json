@@ -4,7 +4,7 @@
   "description": "",
   "main": "index.js",
   "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1",
+    "test": "webpack --module-bind 'jsx=babel' --output-filename=bundle.js index.jsx",
     "start": "webpack-dev-server --host 0.0.0.0 --hot --inline --module-bind 'jsx=babel' index.jsx"
   },
   "author": "",
