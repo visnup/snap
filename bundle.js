@@ -67,6 +67,7 @@
 	_angular2['default'].module('carousel', [__webpack_require__(9)]).directive('carousel', function ($timeout) {
 	  return {
 	    restrict: 'C',
+	    controllerAs: 'carousel',
 	    controller: (function () {
 	      function controller($element) {
 	        _classCallCheck(this, controller);
@@ -81,7 +82,7 @@
 	        var isTouchSupported = ('ontouchstart' in window);
 
 	        if (isTouchSupported && !isScrollSnapSupported) {
-	          this.$element.addClass('snap').on('touchmove', this.onTouchMove.bind(this)).on('touchend', this.onTouchEnd.bind(this));
+	          this.$element.addClass('hide-scrollbar').on('touchmove', this.onTouchMove.bind(this)).on('touchend', this.onTouchEnd.bind(this));
 	        }
 	      }
 
@@ -104,15 +105,19 @@
 	          var _this = this;
 
 	          var x = this.$element.scrollLeft(),
-	              xf = Math.round((x + this.v * 100) / this.width) * this.width,
-	              dt = Math.max((xf - x) / this.v, 200);
+	              xf = Math.round((x + this.v * 200) / this.width) * this.width;
 
-	          this.$element.css('overflow', 'hidden');
+	          if (Math.abs(this.v) < 1) this.v = xf > x ? 1 : -1;
+
+	          var dt = Math.min((xf - x) / this.v, 500);
+
+	          this.dt = dt;
+	          this.$element.css('overflow', 'hidden').scrollLeft(xf, dt, function (t) {
+	            return t * (2 - t);
+	          });
 	          $timeout(function () {
-	            _this.$element.css('overflow', 'scroll').scrollLeft(xf, dt, function (t) {
-	              return t * (2 - t);
-	            });
-	          }, 0);
+	            _this.$element.css('overflow', 'scroll');
+	          }, 10);
 	        }
 	      }]);
 
@@ -41447,7 +41452,7 @@
 
 
 	// module
-	exports.push([module.id, ".carousel {\n  overflow-x: scroll;\n  white-space: nowrap;\n  -webkit-overflow-scrolling: touch;\n  -webkit-scroll-snap-type: mandatory;\n  scroll-snap-type: mandatory;\n  -webkit-scroll-snap-points-x: repeat(100%);\n  scroll-snap-points-x: repeat(100%);\n}\n\n.carousel > * {\n  width: 100%;\n  height: 500px;\n  display: inline-block;\n  background: linear-gradient(90deg, orange, red);\n}\n\n/* hide scrollbars when the directive kicks in */\n.carousel.snap::-webkit-scrollbar {\n  display: none;\n}\n", ""]);
+	exports.push([module.id, ".carousel {\n  overflow-x: scroll;\n  white-space: nowrap;\n  -webkit-overflow-scrolling: touch;\n  -webkit-scroll-snap-type: mandatory;\n  scroll-snap-type: mandatory;\n  -webkit-scroll-snap-points-x: repeat(100%);\n  scroll-snap-points-x: repeat(100%);\n}\n\n.carousel > * {\n  width: 100%;\n  height: 500px;\n  display: inline-block;\n  background: linear-gradient(90deg, orange, red);\n}\n\n/* hide scrollbars when the directive kicks in */\n.carousel.hide-scrollbar::-webkit-scrollbar {\n  display: none;\n}\n", ""]);
 
 	// exports
 
