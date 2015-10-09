@@ -12,52 +12,86 @@ angular
     controllerAs: 'carousel',
     controller: class {
       constructor($element) {
+        const isScrollSnapSupported = 'scrollSnapType' in document.documentElement.style || 'webkitScrollSnapType' in document.documentElement.style,
+              isTouchSupported = 'ontouchmove' in window;
+
+        // only activate for touch + no scroll snap
+        if (!isTouchSupported || isScrollSnapSupported)
+          return;
+
         this.$element = $element;
         this.width = this.$element.prop('offsetWidth');
-        this.x0 = this.$element.scrollLeft();
-        this.t0 = null;
+        this.x0 = this.x = this.$element.scrollLeft();
+        this.t = null;
         this.v = 0;
+        this.startCoords = 0;
+        this.startPosition = this.$element.scrollLeft();
 
-        var isScrollSnapSupported = 'scrollSnapType' in document.documentElement.style || 'webkitScrollSnapType' in document.documentElement.style;
-        var isTouchSupported = 'ontouchstart' in window;
-        
-        if (isTouchSupported && !isScrollSnapSupported) {
-          this.$element
-            .addClass('hide-scrollbar')
-            .on('touchmove', this.onTouchMove.bind(this))
-            .on('touchend', this.onTouchEnd.bind(this));
-        }
+        this.$element
+          .addClass('hide-scrollbar')
+          .css('overflow', 'hidden')
+          .on('touchmove', this.onTouchMove.bind(this))
+          .on('touchstart', this.onTouchStart.bind(this))
+          .on('touchend', this.onTouchEnd.bind(this));
       }
 
-      onTouchMove(e) {
-        const x = this.$element.scrollLeft(),
-              t = Date.now(),
-              dt = t - this.t0;
+      getCoordinates(e) {
+        var touches = e.touches && e.touches.length ? e.touches : [e];
+        var e = (e.changedTouches && e.changedTouches[0]) ||
+            (e.originalEvent && e.originalEvent.changedTouches &&
+                e.originalEvent.changedTouches[0]) ||
+            touches[0].originalEvent || touches[0];
 
+        return {
+          x: e.clientX,
+          y: e.clientY
+        };
+      }
+
+      onTouchStart(e) {
+        this.x0 = this.$element.scrollLeft();
+        this.touch0 = this.getCoordinates(e);
+      } 
+
+      // track instantaneous velocity by watching position over time.
+      onTouchMove(e) {
+        e.preventDefault(); // TODO: bail out if vertical movement
+
+        const x = this.x0 + this.touch0.x - this.getCoordinates(e).x
+        this.$element.scrollLeft(x);
+
+        const t = Date.now(),
+              dt = t - this.t;
+
+        // too short/noisy of a sample duration; wait for another.
         if (dt < 8)
           return;
 
-        this.v = (x - this.x0) / dt;
-        this.x0 = x;
-        this.t0 = t;
+        this.v = (x - this.x) / dt;
+        this.x = x;
+        this.t = t;
       }
 
-      onTouchEnd() {
-        const x = this.$element.scrollLeft(),
-              xf = Math.round((x + this.v * 200) / this.width) * this.width;
+      onTouchEnd(e) {
+        this.$element.scope().$digest(); // for debugging
 
+        const x = this.x0 + this.touch0.x - this.getCoordinates(e).x;
+        var xf = Math.round((x + this.v * 200) / this.width) * this.width;
+        xf = this.constrain(xf, this.x0 - this.width, this.x0 + this.width)
+
+        // minimum speed is 1.
         if (Math.abs(this.v) < 1)
           this.v = xf > x ? 1 : -1;
 
-        const dt = Math.min((xf - x) / this.v, 500);
+        const dt = (xf - x) / this.v;
 
         this.dt = dt;
-        this.$element
-          .css('overflow', 'hidden')
-          .scrollLeft(xf, dt, t => t*(2-t));
-        $timeout(() => {
-          this.$element.css('overflow', 'scroll');
-        }, 10);
+        let a = (Math.abs(this.v) - 1)/3;
+        this.$element.scrollLeft(xf, dt, t => Math.min((a-1)*(t-1)*(t-1) + 1, 1));
+      }
+
+      constrain(x, min, max) {
+        return Math.min(Math.max(x, min), max);
       }
     }
   };

@@ -72,52 +72,84 @@
 	      function controller($element) {
 	        _classCallCheck(this, controller);
 
+	        var isScrollSnapSupported = 'scrollSnapType' in document.documentElement.style || 'webkitScrollSnapType' in document.documentElement.style,
+	            isTouchSupported = ('ontouchmove' in window);
+
+	        // only activate for touch + no scroll snap
+	        if (!isTouchSupported || isScrollSnapSupported) return;
+
 	        this.$element = $element;
 	        this.width = this.$element.prop('offsetWidth');
-	        this.x0 = this.$element.scrollLeft();
-	        this.t0 = null;
+	        this.x0 = this.x = this.$element.scrollLeft();
+	        this.t = null;
 	        this.v = 0;
+	        this.startCoords = 0;
+	        this.startPosition = this.$element.scrollLeft();
 
-	        var isScrollSnapSupported = 'scrollSnapType' in document.documentElement.style || 'webkitScrollSnapType' in document.documentElement.style;
-	        var isTouchSupported = ('ontouchstart' in window);
-
-	        if (isTouchSupported && !isScrollSnapSupported) {
-	          this.$element.addClass('hide-scrollbar').on('touchmove', this.onTouchMove.bind(this)).on('touchend', this.onTouchEnd.bind(this));
-	        }
+	        this.$element.addClass('hide-scrollbar').css('overflow', 'hidden').on('touchmove', this.onTouchMove.bind(this)).on('touchstart', this.onTouchStart.bind(this)).on('touchend', this.onTouchEnd.bind(this));
 	      }
 
 	      _createClass(controller, [{
+	        key: 'getCoordinates',
+	        value: function getCoordinates(e) {
+	          var touches = e.touches && e.touches.length ? e.touches : [e];
+	          var e = e.changedTouches && e.changedTouches[0] || e.originalEvent && e.originalEvent.changedTouches && e.originalEvent.changedTouches[0] || touches[0].originalEvent || touches[0];
+
+	          return {
+	            x: e.clientX,
+	            y: e.clientY
+	          };
+	        }
+	      }, {
+	        key: 'onTouchStart',
+	        value: function onTouchStart(e) {
+	          this.x0 = this.$element.scrollLeft();
+	          this.touch0 = this.getCoordinates(e);
+	        }
+
+	        // track instantaneous velocity by watching position over time.
+	      }, {
 	        key: 'onTouchMove',
 	        value: function onTouchMove(e) {
-	          var x = this.$element.scrollLeft(),
-	              t = Date.now(),
-	              dt = t - this.t0;
+	          e.preventDefault(); // TODO: bail out if vertical movement
 
+	          var x = this.x0 + this.touch0.x - this.getCoordinates(e).x;
+	          this.$element.scrollLeft(x);
+
+	          var t = Date.now(),
+	              dt = t - this.t;
+
+	          // too short/noisy of a sample duration; wait for another.
 	          if (dt < 8) return;
 
-	          this.v = (x - this.x0) / dt;
-	          this.x0 = x;
-	          this.t0 = t;
+	          this.v = (x - this.x) / dt;
+	          this.x = x;
+	          this.t = t;
 	        }
 	      }, {
 	        key: 'onTouchEnd',
-	        value: function onTouchEnd() {
-	          var _this = this;
+	        value: function onTouchEnd(e) {
+	          this.$element.scope().$digest(); // for debugging
 
-	          var x = this.$element.scrollLeft(),
-	              xf = Math.round((x + this.v * 200) / this.width) * this.width;
+	          var x = this.x0 + this.touch0.x - this.getCoordinates(e).x;
+	          var xf = Math.round((x + this.v * 200) / this.width) * this.width;
+	          xf = this.constrain(xf, this.x0 - this.width, this.x0 + this.width);
 
+	          // minimum speed is 1.
 	          if (Math.abs(this.v) < 1) this.v = xf > x ? 1 : -1;
 
-	          var dt = Math.min((xf - x) / this.v, 500);
+	          var dt = (xf - x) / this.v;
 
 	          this.dt = dt;
-	          this.$element.css('overflow', 'hidden').scrollLeft(xf, dt, function (t) {
-	            return t * (2 - t);
+	          var a = (Math.abs(this.v) - 1) / 3;
+	          this.$element.scrollLeft(xf, dt, function (t) {
+	            return Math.min((a - 1) * (t - 1) * (t - 1) + 1, 1);
 	          });
-	          $timeout(function () {
-	            _this.$element.css('overflow', 'scroll');
-	          }, 10);
+	        }
+	      }, {
+	        key: 'constrain',
+	        value: function constrain(x, min, max) {
+	          return Math.min(Math.max(x, min), max);
 	        }
 	      }]);
 
