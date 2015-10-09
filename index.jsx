@@ -73,8 +73,6 @@ angular
       }
 
       onTouchEnd(e) {
-        this.$element.scope().$digest(); // for debugging
-
         const x = this.x0 + this.touch0.x - this.getCoordinates(e).x;
         var xf = Math.round((x + this.v * 200) / this.width) * this.width;
         xf = this.constrain(xf, this.x0 - this.width, this.x0 + this.width)
@@ -83,11 +81,12 @@ angular
         if (Math.abs(this.v) < 1)
           this.v = xf > x ? 1 : -1;
 
-        const dt = (xf - x) / this.v;
-
-        this.dt = dt;
+        this.dt = (xf - x) / this.v;
         let a = (Math.abs(this.v) - 1)/3;
-        this.$element.scrollLeft(xf, dt, t => Math.min((a-1)*(t-1)*(t-1) + 1, 1));
+        this.$element.scrollLeft(xf, this.dt,
+            t => Math.min((a-1)*(t-1)*(t-1) + 1, 1));
+
+        this.$element.scope().$digest(); // for debugging
       }
 
       constrain(x, min, max) {
