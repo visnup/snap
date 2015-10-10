@@ -91,11 +91,9 @@ angular
         const a = (Math.abs(this.v) - 1)/3;
 
         this.children.css('webkitTransform', 'translate3d(0,0,0)');
-        $timeout(() => {
-          this.$element.scrollLeft(x);
-          this.$element.scrollLeft(xf, this.dt,
-                                   t => Math.min((a-1)*(t-1)*(t-1) + 1, 1));
-        }, 0);
+        this.$element.scrollLeft(x);
+        this.$element.scrollLeft(xf, this.dt,
+                                 t => Math.min((a-1)*(t-1)*(t-1) + 1, 1));
 
         this.$element.scope().$digest(); // for debugging
       }
