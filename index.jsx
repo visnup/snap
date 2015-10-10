@@ -88,11 +88,14 @@ angular
           this.v = xf > x ? 1 : -1;
 
         this.dt = (xf - x) / this.v;
-        let a = (Math.abs(this.v) - 1)/3;
+        const a = (Math.abs(this.v) - 1)/3;
+
         this.children.css('webkitTransform', 'translate3d(0,0,0)');
-        this.$element
-          .prop('scrollLeft', x)
-          .scrollLeft(xf, this.dt, t => Math.min((a-1)*(t-1)*(t-1) + 1, 1));
+        $timeout(() => {
+          this.$element.scrollLeft(x);
+          this.$element.scrollLeft(xf, this.dt,
+                                   t => Math.min((a-1)*(t-1)*(t-1) + 1, 1));
+        }, 0);
 
         this.$element.scope().$digest(); // for debugging
       }
