@@ -60,8 +60,10 @@ angular
 
         e.preventDefault();
 
-        const x = this.x0 + this.touch0.x - this.getCoordinates(e).x
-        this.$element.scrollLeft(x);
+        const x = this.touch0.x - touch.x
+        this.$element
+          .find('div')
+          .css('webkitTransform', `translate3d(${-x}px,0,0)`);
 
         const t = Date.now(),
               dt = t - this.t;
@@ -86,8 +88,12 @@ angular
 
         this.dt = (xf - x) / this.v;
         let a = (Math.abs(this.v) - 1)/3;
-        this.$element.scrollLeft(xf, this.dt,
-            t => Math.min((a-1)*(t-1)*(t-1) + 1, 1));
+        this.$element
+          .find('div')
+          .css('webkitTransform', 'translate3d(0,0,0)');
+        this.$element
+          .prop('scrollLeft', x)
+          .scrollLeft(xf, this.dt, t => Math.min((a-1)*(t-1)*(t-1) + 1, 1));
 
         this.$element.scope().$digest(); // for debugging
       }
