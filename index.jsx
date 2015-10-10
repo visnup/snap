@@ -51,24 +51,26 @@ angular
         this.children = this.$element.children();
       } 
 
-      // track instantaneous velocity by watching position over time.
       onTouchMove(e) {
+        // bail out if movement is vertical
         const touch = this.getCoordinates(e),
               dx = Math.abs(touch.x - this.touch0.x),
               dy = Math.abs(touch.y - this.touch0.y);
         if (dy > dx)
           return;
 
+        // prevent vertical movement
         e.preventDefault();
 
+        // move (quickly) to touch position
         const x = this.touch0.x - touch.x
         this.children.css('webkitTransform', `translate3d(${-x}px,0,0)`);
 
+        // track instantaneous velocity by watching position over time.
         const t = Date.now(),
               dt = t - this.t;
 
-        // too short/noisy of a sample duration; wait for another.
-        if (dt < 8)
+        if (dt < 8) // too short/noisy of a sample duration; wait for another.
           return;
 
         this.v = (x - this.x) / dt;
