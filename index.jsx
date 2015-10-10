@@ -23,8 +23,6 @@ angular
         this.x0 = this.x = this.$element.scrollLeft();
         this.t = null;
         this.v = 0;
-        this.startCoords = 0;
-        this.startPosition = this.$element.scrollLeft();
 
         this.$element
           .addClass('hide-scrollbar')
