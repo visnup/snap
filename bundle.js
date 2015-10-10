@@ -79,8 +79,6 @@
 	        this.x0 = this.x = this.$element.scrollLeft();
 	        this.t = null;
 	        this.v = 0;
-	        this.startCoords = 0;
-	        this.startPosition = this.$element.scrollLeft();
 
 	        this.$element.addClass('hide-scrollbar').css('overflow', 'hidden').on('touchmove', this.onTouchMove.bind(this)).on('touchstart', this.onTouchStart.bind(this)).on('touchend', this.onTouchEnd.bind(this));
 	      }
@@ -107,10 +105,15 @@
 	      }, {
 	        key: 'onTouchMove',
 	        value: function onTouchMove(e) {
-	          e.preventDefault(); // TODO: bail out if vertical movement
+	          var touch = this.getCoordinates(e),
+	              dx = Math.abs(touch.x - this.touch0.x),
+	              dy = Math.abs(touch.y - this.touch0.y);
+	          if (dy > dx) return;
 
-	          var x = this.x0 + this.touch0.x - this.getCoordinates(e).x;
-	          this.$element.scrollLeft(x);
+	          e.preventDefault();
+
+	          var x = this.touch0.x - touch.x;
+	          this.$element.find('div').css('webkitTransform', 'translate3d(' + -x + 'px,0,0)');
 
 	          var t = Date.now(),
 	              dt = t - this.t;
@@ -134,7 +137,8 @@
 
 	          this.dt = (xf - x) / this.v;
 	          var a = (Math.abs(this.v) - 1) / 3;
-	          this.$element.scrollLeft(xf, this.dt, function (t) {
+	          this.$element.find('div').css('webkitTransform', 'translate3d(0,0,0)');
+	          this.$element.prop('scrollLeft', x).scrollLeft(xf, this.dt, function (t) {
 	            return Math.min((a - 1) * (t - 1) * (t - 1) + 1, 1);
 	          });
 
