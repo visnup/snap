@@ -99,27 +99,30 @@
 	        value: function onTouchStart(e) {
 	          this.x0 = this.$element.scrollLeft();
 	          this.touch0 = this.getCoordinates(e);
+	          this.children = this.$element.children();
 	        }
-
-	        // track instantaneous velocity by watching position over time.
 	      }, {
 	        key: 'onTouchMove',
 	        value: function onTouchMove(e) {
+	          // bail out if movement is vertical
 	          var touch = this.getCoordinates(e),
 	              dx = Math.abs(touch.x - this.touch0.x),
 	              dy = Math.abs(touch.y - this.touch0.y);
 	          if (dy > dx) return;
 
+	          // prevent vertical movement
 	          e.preventDefault();
 
+	          // move (quickly) to touch position
 	          var x = this.touch0.x - touch.x;
-	          this.$element.find('div').css('webkitTransform', 'translate3d(' + -x + 'px,0,0)');
+	          this.children.css('webkitTransform', 'translate3d(' + -x + 'px,0,0)');
 
+	          // track instantaneous velocity by watching position over time.
 	          var t = Date.now(),
 	              dt = t - this.t;
 
-	          // too short/noisy of a sample duration; wait for another.
-	          if (dt < 8) return;
+	          if (dt < 8) // too short/noisy of a sample duration; wait for another.
+	            return;
 
 	          this.v = (x - this.x) / dt;
 	          this.x = x;
@@ -137,7 +140,7 @@
 
 	          this.dt = (xf - x) / this.v;
 	          var a = (Math.abs(this.v) - 1) / 3;
-	          this.$element.find('div').css('webkitTransform', 'translate3d(0,0,0)');
+	          this.children.css('webkitTransform', 'translate3d(0,0,0)');
 	          this.$element.prop('scrollLeft', x).scrollLeft(xf, this.dt, function (t) {
 	            return Math.min((a - 1) * (t - 1) * (t - 1) + 1, 1);
 	          });
