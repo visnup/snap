@@ -140,8 +140,10 @@
 
 	          this.dt = (xf - x) / this.v;
 	          var a = (Math.abs(this.v) - 1) / 3;
+
 	          this.children.css('webkitTransform', 'translate3d(0,0,0)');
-	          this.$element.prop('scrollLeft', x).scrollLeft(xf, this.dt, function (t) {
+	          this.$element.scrollLeft(x);
+	          this.$element.scrollLeft(xf, this.dt, function (t) {
 	            return Math.min((a - 1) * (t - 1) * (t - 1) + 1, 1);
 	          });
 
