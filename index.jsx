@@ -1,4 +1,3 @@
-import _ from 'lodash';
 import angular from 'angular';
 import css from 'style!css!./index.css';
 
