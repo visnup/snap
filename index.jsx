@@ -52,7 +52,13 @@ angular
 
       // track instantaneous velocity by watching position over time.
       onTouchMove(e) {
-        e.preventDefault(); // TODO: bail out if vertical movement
+        const touch = this.getCoordinates(e),
+              dx = Math.abs(touch.x - this.touch0.x),
+              dy = Math.abs(touch.y - this.touch0.y);
+        if (dy > dx)
+          return;
+
+        e.preventDefault();
 
         const x = this.x0 + this.touch0.x - this.getCoordinates(e).x
         this.$element.scrollLeft(x);
