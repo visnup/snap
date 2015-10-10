@@ -29104,7 +29104,7 @@
 
 
 	// module
-	exports.push([module.id, ".carousel {\n  overflow-x: scroll;\n  white-space: nowrap;\n  -webkit-overflow-scrolling: touch;\n  -webkit-scroll-snap-type: mandatory;\n  scroll-snap-type: mandatory;\n  -webkit-scroll-snap-points-x: repeat(100%);\n  scroll-snap-points-x: repeat(100%);\n}\n\n.carousel > * {\n  width: 100%;\n  height: 50vh;\n  display: inline-block;\n  background: linear-gradient(90deg, orange, red);\n}\n\n/* hide scrollbars when the directive kicks in */\n.carousel.hide-scrollbar::-webkit-scrollbar {\n  display: none;\n}\n", ""]);
+	exports.push([module.id, ".carousel {\n  overflow-x: scroll;\n  white-space: nowrap;\n  -webkit-overflow-scrolling: touch;\n  -webkit-scroll-snap-type: mandatory;\n  scroll-snap-type: mandatory;\n  -webkit-scroll-snap-points-x: repeat(100%);\n  scroll-snap-points-x: repeat(100%);\n}\n\n.carousel > * {\n  width: 100%;\n  height: 100%;\n  display: inline-block;\n}\n\n/* hide scrollbars when the directive kicks in */\n.carousel.hide-scrollbar::-webkit-scrollbar {\n  display: none;\n}\n", ""]);
 
 	// exports
 
